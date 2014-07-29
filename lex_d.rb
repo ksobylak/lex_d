@@ -44,8 +44,6 @@ class Lex_D < Sinatra::Base
   # mtld
   #
   def mtld(text_array, ttr_threshold=0.72)
-    return 0 if text_array.empty?
-
     val1 = mtld_eval(text_array, ttr_threshold)
     val2 = mtld_eval(text_array.reverse, ttr_threshold)
     mtld_scale((val1 + val2) / 2.0)
