@@ -1,8 +1,6 @@
 # Lex D
 
-
-
-## Endpoints.
+## Endpoint
 
 ### GET /document/id
 
@@ -10,7 +8,7 @@ Send me a Scripted **document**'s `id` and I'll give you the corresponding Lexic
 
 ## Research
 
-MTLD implementation based on [McCarthy and Jarvis (2010)](http://link.springer.com/article/10.3758%2FBRM.42.2.381)
+MTLD implementation based on [McCarthy and Jarvis (2010)](http://link.springer.com/article/10.3758%2FBRM.42.2.381).
 
 HDD implementation based on [McCarthy and Jarvis (2007)](http://ltj.sagepub.com/content/24/4/459.short?patientinform-links=yes&legid=spltj;24/4/459) and [McCarthy and Jarvis (2010)](http://link.springer.com/article/10.3758%2FBRM.42.2.381).
 
