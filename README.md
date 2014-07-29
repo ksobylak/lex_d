@@ -1,5 +1,7 @@
 # Lex D
 
+A small Sinatra service that takes a document id and returns a lexical diversity score.
+
 ## Endpoint
 
 ### GET /document/id
