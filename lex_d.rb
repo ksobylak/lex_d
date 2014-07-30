@@ -42,7 +42,7 @@ class Lex_D < Sinatra::Base
     return hdd_score if !hdd_score.kind_of?(Numeric)
     return yules_score if !yules_score.kind_of?(Numeric)
 
-    return 0 if mtld_score == 0 || hdd_score == 0 || yules_score == 0
+    return "ZERO" if mtld_score == 0 || hdd_score == 0 || yules_score == 0
     (mtld_score + hdd_score + yules_score) / 3
   end
 
@@ -88,6 +88,7 @@ class Lex_D < Sinatra::Base
     excess_val = 1.0 - ttr_threshold
     factors += excess / excess_val
 
+    return "DIVIDE BY ZERO" if factors == 0
     text_array.size / factors
   end
 
