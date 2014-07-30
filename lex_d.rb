@@ -37,6 +37,11 @@ class Lex_D < Sinatra::Base
     mtld_score = mtld(text_array, mtld_ttr_threshold)
     hdd_score = hdd(text_array, hdd_sample_size)
     yules_score = yules_i(text_array)
+
+    return mtld_score if !mtld_score.kind_of?(Numeric)
+    return hdd_score if !hdd_score.kind_of?(Numeric)
+    return yules_score if !yules_score.kind_of?(Numeric)
+
     return 0 if mtld_score == 0 || hdd_score == 0 || yules_score == 0
     (mtld_score + hdd_score + yules_score) / 3
   end
@@ -153,14 +158,16 @@ class Lex_D < Sinatra::Base
     freq_array = Array.new(type_array.size / 2.0, 0.0)
 
     type_array.each do |word_type|
-      return 0 if token_array.count(word_type) >= freq_array.size
+      if token_array.count(word_type) >= freq_array.size
+        return "'#{word_type}' USED TOO FREQUENTLY" 
+      end
       freq_array[token_array.count(word_type)] += 1.0
     end
 
-    freq_array.each_with_index do |frequency, index|
-      m2 += (frequency * (index ** 2))
+    freq_array.each_with_index do |num_at_frequency, frequency|
+      m2 += (num_at_frequency * (frequency ** 2))
     end
-    return 0 if (m2 - m1) == 0 || m1 == 0
+    return "DIVIDE BY ZERO" if (m2 - m1) == 0
     yules_scale((m1 * m1) / (m2 - m1))
   end
 
