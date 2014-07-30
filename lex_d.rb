@@ -37,7 +37,12 @@ class Lex_D < Sinatra::Base
     mtld_score = mtld(text_array, mtld_ttr_threshold)
     hdd_score = hdd(text_array, hdd_sample_size)
     yules_score = yules_i(text_array)
-    return 0 if mtld_score == 0 || hdd_score == 0 || yules_score == 0
+
+    return mtld_score if !mtld_score.kind_of?(Numeric)
+    return hdd_score if !hdd_score.kind_of?(Numeric)
+    return yules_score if !yules_score.kind_of?(Numeric)
+
+    return "ZERO" if mtld_score == 0 || hdd_score == 0 || yules_score == 0
     (mtld_score + hdd_score + yules_score) / 3
   end
 
@@ -61,11 +66,11 @@ class Lex_D < Sinatra::Base
     current_words = []
     factors = 0.0
 
-    text_array.each do |element|
+    text_array.each do |word|
       current_tokens += 1
-      unless current_words.include?(element)
+      unless current_words.include?(word)
         current_types += 1
-        current_words << element
+        current_words << word
       end
 
       current_ttr = current_types / current_tokens
@@ -83,6 +88,7 @@ class Lex_D < Sinatra::Base
     excess_val = 1.0 - ttr_threshold
     factors += excess / excess_val
 
+    return "DIVIDE BY ZERO" if factors == 0
     text_array.size / factors
   end
 
@@ -101,8 +107,8 @@ class Lex_D < Sinatra::Base
 
     type_array = create_type_array(token_array)
 
-    type_array.each do |element|
-      contribution = 1.0 - hypergeometric(token_array.size, sample_size, token_array.count(element), 0.0)
+    type_array.each do |word_type|
+      contribution = 1.0 - hypergeometric(token_array.size, sample_size, token_array.count(word_type), 0.0)
       contribution = contribution / sample_size
       hdd_value += contribution
     end
@@ -152,15 +158,17 @@ class Lex_D < Sinatra::Base
     m2 = 0.0
     freq_array = Array.new(type_array.size / 2.0, 0.0)
 
-    type_array.each do |element|
-      return 0 if token_array.count(element) >= freq_array.size
-      freq_array[token_array.count(element)] += 1.0
+    type_array.each do |word_type|
+      if token_array.count(word_type) >= freq_array.size
+        return "'#{word_type}' USED TOO FREQUENTLY" 
+      end
+      freq_array[token_array.count(word_type)] += 1.0
     end
 
-    freq_array.each_with_index do |element, index|
-      m2 += (element * (index ** 2))
+    freq_array.each_with_index do |num_at_frequency, frequency|
+      m2 += (num_at_frequency * (frequency ** 2))
     end
-    return 0 if (m2 - m1) == 0 || m1 == 0
+    return "DIVIDE BY ZERO" if (m2 - m1) == 0
     yules_scale((m1 * m1) / (m2 - m1))
   end
 
@@ -176,9 +184,9 @@ class Lex_D < Sinatra::Base
   #
   def create_type_array(token_array)
     type_array = []
-    token_array.each do |element|
-      unless type_array.include?(element)
-        type_array << element
+    token_array.each do |word|
+      unless type_array.include?(word)
+        type_array << word
       end
     end
     type_array
