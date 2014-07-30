@@ -61,11 +61,11 @@ class Lex_D < Sinatra::Base
     current_words = []
     factors = 0.0
 
-    text_array.each do |element|
+    text_array.each do |word|
       current_tokens += 1
-      unless current_words.include?(element)
+      unless current_words.include?(word)
         current_types += 1
-        current_words << element
+        current_words << word
       end
 
       current_ttr = current_types / current_tokens
@@ -101,8 +101,8 @@ class Lex_D < Sinatra::Base
 
     type_array = create_type_array(token_array)
 
-    type_array.each do |element|
-      contribution = 1.0 - hypergeometric(token_array.size, sample_size, token_array.count(element), 0.0)
+    type_array.each do |word_type|
+      contribution = 1.0 - hypergeometric(token_array.size, sample_size, token_array.count(word_type), 0.0)
       contribution = contribution / sample_size
       hdd_value += contribution
     end
@@ -152,13 +152,13 @@ class Lex_D < Sinatra::Base
     m2 = 0.0
     freq_array = Array.new(type_array.size / 2.0, 0.0)
 
-    type_array.each do |element|
-      return 0 if token_array.count(element) >= freq_array.size
-      freq_array[token_array.count(element)] += 1.0
+    type_array.each do |word_type|
+      return 0 if token_array.count(word_type) >= freq_array.size
+      freq_array[token_array.count(word_type)] += 1.0
     end
 
-    freq_array.each_with_index do |element, index|
-      m2 += (element * (index ** 2))
+    freq_array.each_with_index do |frequency, index|
+      m2 += (frequency * (index ** 2))
     end
     return 0 if (m2 - m1) == 0 || m1 == 0
     yules_scale((m1 * m1) / (m2 - m1))
@@ -176,9 +176,9 @@ class Lex_D < Sinatra::Base
   #
   def create_type_array(token_array)
     type_array = []
-    token_array.each do |element|
-      unless type_array.include?(element)
-        type_array << element
+    token_array.each do |word|
+      unless type_array.include?(word)
+        type_array << word
       end
     end
     type_array
