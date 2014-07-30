@@ -24,7 +24,6 @@ class Lex_D < Sinatra::Base
 
     # Return score
     "#{score}"
-
   end
 
 
@@ -34,7 +33,11 @@ class Lex_D < Sinatra::Base
   # lex_d
   #
   def lex_d(text_array, mtld_ttr_threshold=0.72, hdd_sample_size=40.0)
-    (mtld(text_array, mtld_ttr_threshold) + hdd(text_array, hdd_sample_size) + yules_i(text_array)) / 3
+    mtld_score = mtld(text_array, mtld_ttr_threshold)
+    hdd_score = hdd(text_array, hdd_sample_size)
+    yules_score = yules_i(text_array)
+    return 0 if mtld_score == 0 || hdd_score == 0 || yules_score == 0
+    (mtld_score + hdd_score + yules_score) / 3
   end
 
 
@@ -46,6 +49,7 @@ class Lex_D < Sinatra::Base
   def mtld(text_array, ttr_threshold=0.72)
     val1 = mtld_eval(text_array, ttr_threshold)
     val2 = mtld_eval(text_array.reverse, ttr_threshold)
+    return 0 if val1 == 0 || val2 == 0
     mtld_scale((val1 + val2) / 2.0)
   end
 
@@ -101,7 +105,7 @@ class Lex_D < Sinatra::Base
       contribution = contribution / sample_size
       hdd_value += contribution
     end
-
+    return 0 if hdd_value == 0
     hdd_scale(hdd_value)
   end
 
@@ -155,7 +159,7 @@ class Lex_D < Sinatra::Base
     freq_array.each_with_index do |element, index|
       m2 += (element * (index ** 2))
     end
-    return 0 if (m2 - m1) == 0
+    return 0 if (m2 - m1) == 0 || m1 == 0
     yules_scale((m1 * m1) / (m2 - m1))
   end
 
