@@ -1,12 +1,12 @@
 # Lex D
 
-A small Sinatra service that takes a document id and returns a lexical diversity score.
+A small Sinatra service that takes a string and returns a lexical diversity score.
 
 ## Endpoint
 
-### GET /document/id
+### POST /
 
-Send me a Scripted **document**'s `id` and I'll give you the corresponding Lexical Diversity score.
+Send me a string and I'll give you the corresponding Lexical Diversity score.
 
 ## Research
 
