@@ -24,7 +24,11 @@ class Lex_D < Sinatra::Base
     score = lex_d(text_array)
 
     # Return score
-    [200, "#{score}"]
+    if !score.kind_of?(Numeric)
+      score
+    else
+      [200, "#{score}"]
+    end
   end
 
 
