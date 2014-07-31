@@ -38,7 +38,7 @@ class Lex_D < Sinatra::Base
   # lex_d
   #
   def lex_d(text_array, mtld_ttr_threshold=0.72, hdd_sample_size=40.0)
-    mtld_score = mtld(text_array, mtld_ttr_threshold)
+    mtld_score = MTLD.new(text_array, mtld_ttr_threshold).run
     hdd_score = hdd(text_array, hdd_sample_size)
     yules_score = yules_i(text_array)
 
@@ -56,48 +56,57 @@ class Lex_D < Sinatra::Base
   ###################################
   # mtld
   #
-  def mtld(text_array, ttr_threshold=0.72)
-    val1 = mtld_eval(text_array, ttr_threshold)
-    val2 = mtld_eval(text_array.reverse, ttr_threshold)
-    return 0 if val1 == 0 || val2 == 0
-    mtld_scale((val1 + val2) / 2.0)
-  end
+  class MTLD
+    attr_accessor :text_array, :ttr_threshold
 
-  def mtld_eval(text_array, ttr_threshold)
-    current_ttr = 1.0
-    current_types = 0.0
-    current_tokens = 0.0
-    current_words = []
-    factors = 0.0
-
-    text_array.each do |word|
-      current_tokens += 1
-      unless current_words.include?(word)
-        current_types += 1
-        current_words << word
-      end
-
-      current_ttr = current_types / current_tokens
-
-      if current_ttr < ttr_threshold
-        factors += 1
-        current_ttr = 0.0
-        current_types = 0.0
-        current_tokens = 0.0
-        current_words = []
-      end
+    def initialize(text_array, ttr_threshold=0.72)
+      self.text_array = text_array
+      self.ttr_threshold = ttr_threshold
     end
 
-    excess = 1.0 - current_ttr
-    excess_val = 1.0 - ttr_threshold
-    factors += excess / excess_val
+    def run
+      val1 = mtld_eval(text_array, ttr_threshold)
+      val2 = mtld_eval(text_array.reverse, ttr_threshold)
+      return 0 if val1 == 0 || val2 == 0
+      mtld_scale((val1 + val2) / 2.0)
+    end
 
-    return [400, "DIVIDE BY ZERO"] if factors == 0
-    text_array.size / factors
-  end
+    def mtld_eval(text_array, ttr_threshold)
+      current_ttr = 1.0
+      current_types = 0.0
+      current_tokens = 0.0
+      current_words = []
+      factors = 0.0
 
-  def mtld_scale(mtld)
-    ((mtld - 99.284) * 0.5554 + 100)
+      text_array.each do |word|
+        current_tokens += 1
+        unless current_words.include?(word)
+          current_types += 1
+          current_words << word
+        end
+
+        current_ttr = current_types / current_tokens
+
+        if current_ttr < ttr_threshold
+          factors += 1
+          current_ttr = 0.0
+          current_types = 0.0
+          current_tokens = 0.0
+          current_words = []
+        end
+      end
+
+      excess = 1.0 - current_ttr
+      excess_val = 1.0 - ttr_threshold
+      factors += excess / excess_val
+
+      return [400, "DIVIDE BY ZERO"] if factors == 0
+      text_array.size / factors
+    end
+
+    def mtld_scale(mtld)
+      ((mtld - 99.284) * 0.5554 + 100)
+    end
   end
 
 
@@ -164,7 +173,7 @@ class Lex_D < Sinatra::Base
 
     type_array.each do |word_type|
       if token_array.count(word_type) >= freq_array.size
-        return [400, "'#{word_type}' USED TOO FREQUENTLY"] 
+        return [400, "'#{word_type}' USED TOO FREQUENTLY"]
       end
       freq_array[token_array.count(word_type)] += 1.0
     end
@@ -195,7 +204,7 @@ class Lex_D < Sinatra::Base
     end
     type_array
   end
-    
+
   def clean_text(text)
     new_text = text.gsub(/<(.|\n)*?>/, ' ')
     new_text = new_text.gsub(/&nbsp;/, ' ')
@@ -204,4 +213,4 @@ class Lex_D < Sinatra::Base
     new_text = new_text.downcase
     new_text.split
   end
-end  
+end
