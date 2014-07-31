@@ -15,16 +15,16 @@ class Lex_D < Sinatra::Base
 
     # Make sure array isn't empty or too short
     if (text_array.empty?)
-      return "EMPTY STRING"
+      return [400, "EMPTY STRING"]
     elsif (text_array.length < 40)
-      return "TOO SHORT"
+      return [400, "TOO SHORT"]
     end
 
     # Run lexical diversity analysis
     score = lex_d(text_array)
 
     # Return score
-    "#{score}"
+    [200, "#{score}"]
   end
 
 
@@ -42,7 +42,7 @@ class Lex_D < Sinatra::Base
     return hdd_score if !hdd_score.kind_of?(Numeric)
     return yules_score if !yules_score.kind_of?(Numeric)
 
-    return "ZERO" if mtld_score == 0 || hdd_score == 0 || yules_score == 0
+    return [400, "ZERO"] if mtld_score == 0 || hdd_score == 0 || yules_score == 0
     (mtld_score + hdd_score + yules_score) / 3
   end
 
@@ -88,7 +88,7 @@ class Lex_D < Sinatra::Base
     excess_val = 1.0 - ttr_threshold
     factors += excess / excess_val
 
-    return "DIVIDE BY ZERO" if factors == 0
+    return [400, "DIVIDE BY ZERO"] if factors == 0
     text_array.size / factors
   end
 
@@ -160,7 +160,7 @@ class Lex_D < Sinatra::Base
 
     type_array.each do |word_type|
       if token_array.count(word_type) >= freq_array.size
-        return "'#{word_type}' USED TOO FREQUENTLY" 
+        return [400, "'#{word_type}' USED TOO FREQUENTLY"] 
       end
       freq_array[token_array.count(word_type)] += 1.0
     end
@@ -168,7 +168,7 @@ class Lex_D < Sinatra::Base
     freq_array.each_with_index do |num_at_frequency, frequency|
       m2 += (num_at_frequency * (frequency ** 2))
     end
-    return "DIVIDE BY ZERO" if (m2 - m1) == 0
+    return [400, "DIVIDE BY ZERO"] if (m2 - m1) == 0
     yules_scale((m1 * m1) / (m2 - m1))
   end
 
