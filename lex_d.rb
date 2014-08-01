@@ -39,8 +39,8 @@ class Lex_D < Sinatra::Base
   #
   def lex_d(text_array, mtld_ttr_threshold=0.72, hdd_sample_size=40.0)
     mtld_score = MTLD.new(text_array, mtld_ttr_threshold).run
-    hdd_score = hdd(text_array, hdd_sample_size)
-    yules_score = yules_i(text_array)
+    hdd_score = HDD.new(text_array, hdd_sample_size).run
+    yules_score = YulesI.new(text_array).run
 
     return mtld_score if !mtld_score.kind_of?(Numeric)
     return hdd_score if !hdd_score.kind_of?(Numeric)
@@ -115,47 +115,57 @@ class Lex_D < Sinatra::Base
   ###################################
   # hdd
   #
-  def hdd(token_array, sample_size=40.0)
-    hdd_value = 0.0
+  class HDD
+    attr_accessor :token_array, :sample_size
 
-    type_array = create_type_array(token_array)
-
-    type_array.each do |word_type|
-      contribution = 1.0 - hypergeometric(token_array.size, sample_size, token_array.count(word_type), 0.0)
-      contribution = contribution / sample_size
-      hdd_value += contribution
+    def initialize(token_array, sample_size=40.0)
+      self.token_array = token_array
+      self.sample_size = sample_size
     end
-    return 0 if hdd_value == 0
-    hdd_scale(hdd_value)
-  end
 
-  # hdd helpers
-  #
-  def hypergeometric(population, sample, pop_successes, samp_successes)
-    (combination(pop_successes, samp_successes) * combination(population - pop_successes, sample - samp_successes)) / combination(population, sample)
-  end
+    def run
+      hdd_value = 0.0
 
-  def combination(n, k)
-    n_minus_k = n - k
-    i = n
-    numerator = 1
-    while i > n_minus_k && i > 0 do
-      numerator *= i
-      i -= 1
+      type_array = Helper.create_type_array(token_array)
+
+      type_array.each do |word_type|
+        contribution = 1.0 - hypergeometric(token_array.size, sample_size, token_array.count(word_type), 0.0)
+        contribution = contribution / sample_size
+        hdd_value += contribution
+      end
+      return 0 if hdd_value == 0
+      hdd_scale(hdd_value)
     end
-    numerator / factorial(k)
-  end
+    
 
-  def factorial(n)
-    if n <= 1
-      1
-    else
-      n * factorial(n - 1)
+    # hdd helpers
+    #
+    def hypergeometric(population, sample, pop_successes, samp_successes)
+      (combination(pop_successes, samp_successes) * combination(population - pop_successes, sample - samp_successes)) / combination(population, sample)
     end
-  end
 
-  def hdd_scale(hdd)
-    ((hdd - 0.854) * 592.1052 + 100)
+    def combination(n, k)
+      n_minus_k = n - k
+      i = n
+      numerator = 1
+      while i > n_minus_k && i > 0 do
+        numerator *= i
+        i -= 1
+      end
+      numerator / factorial(k)
+    end
+
+    def factorial(n)
+      if n <= 1
+        1
+      else
+        n * factorial(n - 1)
+      end
+    end
+
+    def hdd_scale(hdd)
+      ((hdd - 0.854) * 592.1052 + 100)
+    end
   end
 
 
@@ -164,29 +174,37 @@ class Lex_D < Sinatra::Base
   ###################################
   # yules i
   #
-  def yules_i(token_array)
-    type_array = create_type_array(token_array)
+  class YulesI
+    attr_accessor :token_array
 
-    m1 = token_array.size
-    m2 = 0.0
-    freq_array = Array.new(type_array.size / 2.0, 0.0)
+    def initialize(token_array)
+      self.token_array = token_array
+    end
 
-    type_array.each do |word_type|
-      if token_array.count(word_type) >= freq_array.size
-        return "'#{word_type}' USED TOO FREQUENTLY"
+    def run
+      type_array = Helper.create_type_array(token_array)
+
+      m1 = token_array.size
+      m2 = 0.0
+      freq_array = Array.new(type_array.size / 2.0, 0.0)
+
+      type_array.each do |word_type|
+        if token_array.count(word_type) >= freq_array.size
+          return "'#{word_type}' USED TOO FREQUENTLY"
+        end
+        freq_array[token_array.count(word_type)] += 1.0
       end
-      freq_array[token_array.count(word_type)] += 1.0
+
+      freq_array.each_with_index do |num_at_frequency, frequency|
+        m2 += (num_at_frequency * (frequency ** 2))
+      end
+      return "DIVIDE BY ZERO" if (m2 - m1) == 0
+      yules_scale((m1 * m1) / (m2 - m1))
     end
 
-    freq_array.each_with_index do |num_at_frequency, frequency|
-      m2 += (num_at_frequency * (frequency ** 2))
+    def yules_scale(yules)
+      ((yules - 100.793) * 0.6818 + 100)
     end
-    return "DIVIDE BY ZERO" if (m2 - m1) == 0
-    yules_scale((m1 * m1) / (m2 - m1))
-  end
-
-  def yules_scale(yules)
-    ((yules - 100.793) * 0.6818 + 100)
   end
 
 
@@ -195,14 +213,16 @@ class Lex_D < Sinatra::Base
   ###################################
   # helpers
   #
-  def create_type_array(token_array)
-    type_array = []
-    token_array.each do |word|
-      unless type_array.include?(word)
-        type_array << word
+  module Helper
+    def self.create_type_array(token_array)
+      type_array = []
+      token_array.each do |word|
+        unless type_array.include?(word)
+          type_array << word
+        end
       end
+      type_array
     end
-    type_array
   end
 
   def clean_text(text)
