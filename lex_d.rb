@@ -25,7 +25,7 @@ class Lex_D < Sinatra::Base
 
     # Return score
     if !score.kind_of?(Numeric)
-      score
+      [400, score]
     else
       [200, "#{score}"]
     end
@@ -46,7 +46,7 @@ class Lex_D < Sinatra::Base
     return hdd_score if !hdd_score.kind_of?(Numeric)
     return yules_score if !yules_score.kind_of?(Numeric)
 
-    return [400, "ZERO"] if mtld_score == 0 || hdd_score == 0 || yules_score == 0
+    return "ZERO" if mtld_score == 0 || hdd_score == 0 || yules_score == 0
     (mtld_score + hdd_score + yules_score) / 3
   end
 
@@ -100,7 +100,7 @@ class Lex_D < Sinatra::Base
       excess_val = 1.0 - ttr_threshold
       factors += excess / excess_val
 
-      return [400, "DIVIDE BY ZERO"] if factors == 0
+      return "DIVIDE BY ZERO" if factors == 0
       text_array.size / factors
     end
 
@@ -173,7 +173,7 @@ class Lex_D < Sinatra::Base
 
     type_array.each do |word_type|
       if token_array.count(word_type) >= freq_array.size
-        return [400, "'#{word_type}' USED TOO FREQUENTLY"]
+        return "'#{word_type}' USED TOO FREQUENTLY"
       end
       freq_array[token_array.count(word_type)] += 1.0
     end
@@ -181,7 +181,7 @@ class Lex_D < Sinatra::Base
     freq_array.each_with_index do |num_at_frequency, frequency|
       m2 += (num_at_frequency * (frequency ** 2))
     end
-    return [400, "DIVIDE BY ZERO"] if (m2 - m1) == 0
+    return "DIVIDE BY ZERO" if (m2 - m1) == 0
     yules_scale((m1 * m1) / (m2 - m1))
   end
 
