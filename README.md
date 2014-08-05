@@ -16,7 +16,7 @@ For example:
     status = response.code        # HTTP status code (as a String)
     score = response.body.to_f    # Lexical diversity score (as a Float)
 
-Note: if the given string is invalid, the `response.code` will be 400, and the `response.body` will be a String describing the error
+Note: if the given string is invalid, the `response.code` will be 400, and the `response.body` will be a String describing the error.
 
 ## Invalid Input
 
@@ -24,15 +24,15 @@ Note: if the given string is invalid, the `response.code` will be 400, and the `
 
 A non-empty string under forty words returns `"TOO SHORT"`.
 
-If one word occurs greater than 50% of the time in the input, it will return `"'[word]' USED TOO FREQUENTLY"`
+If one word occurs greater than 50% of the time in the input, it will return `"'[word]' USED TOO FREQUENTLY"`.
 
-If all the words are unique and no word is repeated, it will return `'DIVIDE BY ZERO'` (infinite lexical diversity)
+If all the words are unique and no word is repeated, it will return `'DIVIDE BY ZERO'` (infinite lexical diversity).
 
-If any of the individual measures evaluate to 0, it will return `'ZERO'` (this shouldn't happen, and is indicitive of a problem)
+If any of the individual measures evaluate to 0, it will return `'ZERO'` (this shouldn't happen, and is indicitive of a problem).
 
 ## Lexical Diversity Overview
 
-The most basic way to measure the lexical diversity of a block of text is to divide the number of 'types' of words by the total number of word 'tokens'. This is known as type-token ratio (TTR). The problem with TTR is that it is very sensitive to text length. The longer the text, the lower the ratio. As more tokens are added, the number of new types continually drops and the ratio falls accordingly. A more meaningful measure for lexical diversity is highly desirable amongst language researchers, so over the years, several measures have been developed with the priority of decreasing the sensitivity to text length. The lexical diversity score returned by this service is a combination of three of these measures: the Measure of Textual Lexical Diversity (MTLD), the Hypergeometric Distribution D (HD-D) based on vocd-D, and Yule's I (the inverse of Yule's Characteristic K). The three measures are computed individually, and then scaled based on averages and standard deviations computed when applied to several thousand documents in the [Scripted.com](http://www.scripted.com) database. The average score on the final measure should lie somewhere around 100, though it may be lower in general, and the standard deviation should be around 15.
+The most basic way to measure the lexical diversity of a block of text is to divide the number of 'types' of words by the total number of word 'tokens'. This is known as type-token ratio (TTR). The problem with TTR is that it is very sensitive to text length. The longer the text, the lower the ratio. As more tokens are added, the number of new types continually drops and the ratio falls accordingly. A more meaningful measure for lexical diversity is highly desirable amongst language researchers, so over the years, several measures have been developed with the priority of decreasing the sensitivity to text length. The lexical diversity score returned by this service is a combination of three of these measures: the Measure of Textual Lexical Diversity (MTLD), the Hypergeometric Distribution D (HD-D) based on vocd-D, and Yule's I (the inverse of Yule's Characteristic K). The three measures are computed individually, and then scaled and averaged based on means and standard deviations computed when applied to several thousand documents in the [Scripted.com](http://www.scripted.com) database. The mean of the final measure should lie somewhere around 100, though it may be lower in general, and the standard deviation should be around 15.
 
 ## Research
 
