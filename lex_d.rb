@@ -67,6 +67,8 @@ class Lex_D < Sinatra::Base
     def run
       val1 = mtld_eval(text_array, ttr_threshold)
       val2 = mtld_eval(text_array.reverse, ttr_threshold)
+      return val1 if !val1.kind_of?(Numeric)
+      return val2 if !val2.kind_of?(Numeric)
       return 0 if val1 == 0 || val2 == 0
       mtld_scale((val1 + val2) / 2.0)
     end
