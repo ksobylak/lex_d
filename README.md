@@ -18,6 +18,8 @@ In Ruby:
     status = response.code        # HTTP status code (as a String)
     score = response.body.to_f    # Lexical diversity score (as a Float)
 
+Note: if the given string is invalid, the `response.code` will be 400, and the `response.body` will be a String describing the error.
+
 In Python:
 
     from httplib2 import Http
@@ -37,8 +39,6 @@ In Python:
                 print(float(str(content).split("'")[1]))  # print Lexical diversity score
         else:
             print('Error 200 thrown from server')
-
-Note: if the given string is invalid, the `response.code` will be 400, and the `response.body` will be a String describing the error.
 
 ## Invalid Input
 
