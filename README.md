@@ -22,12 +22,21 @@ In Python:
 
     from httplib2 import Http
     from urllib.parse import urlencode
+    from xml.etree.ElementTree import fromstring
+
+    error_codes = ["'", 'E', 'T', 'D', 'Z']
     http = Http()
-    text = 'This is the string of text to be tested'
-    data = {'post': text}
-    response, content = http.request("http://lex-d.herokuapp.com", "POST", urlencode(data))
-    status = response['status']   # HTTP status code (as a String)
-    score = float(content)        # Lexical diversity score (as a Float)
+
+    def find_lex_d(text):
+        data = {'input': text}
+        response, content = http.request("http://lex-d.herokuapp.com", "POST", urlencode(data))
+        if response['status'] != 200:
+            if str(content)[2] in error_codes:
+                print(content)                    # print error message if error
+            else:
+                print(float(str(content).split("'")[1]))  # print Lexical diversity score
+        else:
+            print('Error 200 thrown from server')
 
 Note: if the given string is invalid, the `response.code` will be 400, and the `response.body` will be a String describing the error.
 
@@ -42,6 +51,10 @@ If one word occurs greater than 50% of the time in the input, it will return `"'
 If all the words are unique and no word is repeated, it will return `'DIVIDE BY ZERO'` (infinite lexical diversity).
 
 If any of the individual measures evaluate to 0, it will return `'ZERO'` (this shouldn't happen, and is indicitive of a problem).
+
+## String Parsing
+
+Lex D should strip out all html tags, &nbsp, \n, and all non-alphanumeric characters before computing a score.
 
 ## Lexical Diversity Overview
 
