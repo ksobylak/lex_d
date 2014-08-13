@@ -10,11 +10,24 @@ Send me a string (of forty or more words) and I'll give you the corresponding Le
 
 For example:
 
+In Ruby:
+
     uri = URI('http://lex-d.herokuapp.com')
     text = document_to_be_scored  # (a string)
     response = Net::HTTP.post_form(uri, { "input" => text })
     status = response.code        # HTTP status code (as a String)
     score = response.body.to_f    # Lexical diversity score (as a Float)
+
+In Python:
+
+    from httplib2 import Http
+    from urllib.parse import urlencode
+    http = Http()
+    text = 'This is the string of text to be tested'
+    data = {'post': text}
+    response, content = http.request("http://lex-d.herokuapp.com", "POST", urlencode(data))
+    status = response['status']   # HTTP status code (as a String)
+    score = float(content)        # Lexical diversity score (as a Float)
 
 Note: if the given string is invalid, the `response.code` will be 400, and the `response.body` will be a String describing the error.
 
